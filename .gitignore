@@ -1,0 +1,77 @@
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Data files (large datasets should not be in git)
+data/
+*.csv
+*.json
+*.pkl
+*.pickle
+
+# But keep these important config files
+!requirements.txt
+!configs/*.json
+!configs/*.yaml
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# PyTorch / ML
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+checkpoints/
+saved_models/
+wandb/
+runs/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Logs
+logs/
+*.log
+*.out
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Large image folders (if you want to exclude them)
+# Uncomment if your data/images folder is too large
+# data/images/
+
+# Keep README and documentation
+!*.md
+!LICENSE
