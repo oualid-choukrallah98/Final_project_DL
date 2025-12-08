@@ -1,0 +1,76 @@
+[project]
+name = "final-project-dl"
+version = "0.1.0"
+description = "Deep Learning Final Project"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    # Core Deep Learning
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "torchaudio>=2.0.0",
+    # Computer Vision & Image Processing
+    "Pillow>=9.5.0",
+    "opencv-python>=4.8.0",
+    # Data Science & Analysis
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "scipy>=1.10.0",
+    # NLP & Tokenization
+    "transformers>=4.30.0",
+    "tokenizers>=0.13.0",
+    "sentencepiece>=0.1.99",
+    # Evaluation Metrics
+    "nltk>=3.8.0",
+    "evaluate>=0.4.0",
+    # Visualization
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "plotly>=5.14.0",
+    # Progress Bars & Logging
+    "tqdm>=4.65.0",
+    "wandb>=0.15.0",
+    "tensorboard>=2.13.0",
+    # Jupyter
+    "jupyter>=1.0.0",
+    "ipykernel>=6.23.0",
+    "ipywidgets>=8.0.0",
+    # Utilities
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "timm>=0.9.0",
+    # Testing
+    "pytest>=7.3.0",
+    # Code Quality
+    "black>=23.3.0",
+    "flake8>=6.0.0",
+    "peft>=0.18.0",
+    "pycocoevalcap>=1.2",
+    "radgraph>=0.1.18",
+]
+
+[project.optional-dependencies]
+mamba = [
+    # Mamba Architecture (REQUIRES CUDA - install separately on GPU machine)
+    # See MAMBA_INSTALLATION.md for installation instructions
+    # "mamba-ssm>=1.0.0",
+    # "causal-conv1d>=1.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
