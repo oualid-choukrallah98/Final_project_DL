@@ -48,14 +48,14 @@ dependencies = [
     "peft>=0.18.0",
     "pycocoevalcap>=1.2",
     "radgraph>=0.1.18",
+    "mamba-ssm>=2.2.6.post3",
 ]
 
 [project.optional-dependencies]
 mamba = [
     # Mamba Architecture (REQUIRES CUDA - install separately on GPU machine)
     # See MAMBA_INSTALLATION.md for installation instructions
-    # "mamba-ssm>=1.0.0",
-    # "causal-conv1d>=1.1.0",
+    "mamba-ssm>=1.0.0",
 ]
 
 [build-system]
