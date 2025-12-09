@@ -51,12 +51,12 @@ def apply_rotary_pos_emb(q, k, cos, sin):
 
 class MambaBlock(nn.Module):
     """Mamba block with optional RoPE"""
-    
-    def __init__(self, d_model, d_state=16, d_conv=4, expand=2, use_rope=False):
+
+    def __init__(self, d_model, d_state=16, d_conv=4, expand=2, use_rope=False, dropout=0.2):
         super().__init__()
         self.d_model = d_model
         self.use_rope = use_rope
-        
+
         if MAMBA_AVAILABLE:
             self.mamba = Mamba(
                 d_model=d_model,
@@ -71,9 +71,9 @@ class MambaBlock(nn.Module):
                 nn.SiLU(),
                 nn.Linear(d_model * expand, d_model),
             )
-        
+
         self.norm = nn.LayerNorm(d_model)
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(dropout)
         
         if use_rope:
             self.rope = RotaryEmbedding(d_model // 2)
@@ -115,6 +115,8 @@ class MambaDecoder(nn.Module):
         use_rope=False,
         vision_model_name="Salesforce/blip-image-captioning-base",
         vocab_path=None,
+        dropout=0.1,
+        freeze_vision_encoder=True,
     ):
         super().__init__()
         self.d_model = d_model
@@ -125,8 +127,16 @@ class MambaDecoder(nn.Module):
         self.vision_model = BlipVisionModel.from_pretrained(vision_model_name)
         vision_dim = self.vision_model.config.hidden_size
 
-        # Project vision features to decoder dimension
-        self.vision_proj = nn.Linear(vision_dim, d_model)
+        # Freeze vision encoder to prevent overfitting
+        if freeze_vision_encoder:
+            for param in self.vision_model.parameters():
+                param.requires_grad = False
+
+        # Project vision features to decoder dimension with dropout
+        self.vision_proj = nn.Sequential(
+            nn.Linear(vision_dim, d_model),
+            nn.Dropout(dropout)
+        )
 
         # Load vocabulary
         with open(vocab_path, 'r') as f:
@@ -145,7 +155,8 @@ class MambaDecoder(nn.Module):
         self.tokenizer = None
 
         self.embedding = nn.Embedding(self.vocab_size, d_model)
-        
+        self.embedding_dropout = nn.Dropout(dropout)
+
         # Positional encoding
         if not use_rope:
             self.pos_embedding = nn.Parameter(
@@ -153,15 +164,16 @@ class MambaDecoder(nn.Module):
             )
         else:
             self.pos_embedding = None
-        
-        # Mamba layers
+
+        # Mamba layers with increased dropout
         self.layers = nn.ModuleList([
-            MambaBlock(d_model, d_state, d_conv, expand, use_rope=use_rope)
+            MambaBlock(d_model, d_state, d_conv, expand, use_rope=use_rope, dropout=dropout)
             for _ in range(n_layers)
         ])
-        
+
         # Output layer
         self.norm = nn.LayerNorm(d_model)
+        self.output_dropout = nn.Dropout(dropout)
         self.lm_head = nn.Linear(d_model, self.vocab_size, bias=False)
 
         # Tie weights
@@ -226,9 +238,10 @@ class MambaDecoder(nn.Module):
         vision_features = vision_outputs.last_hidden_state  # [B, N, vision_dim]
         vision_features = self.vision_proj(vision_features)  # [B, N, d_model]
         
-        # Get text embeddings
+        # Get text embeddings with dropout
         if input_ids is not None:
             text_embeds = self.embedding(input_ids)  # [B, L, d_model]
+            text_embeds = self.embedding_dropout(text_embeds)
             seq_len = text_embeds.shape[1]
         else:
             # For generation, start with vision features
@@ -258,9 +271,10 @@ class MambaDecoder(nn.Module):
         # Apply Mamba layers
         for layer in self.layers:
             x = layer(x)
-        
+
         x = self.norm(x)
-        
+        x = self.output_dropout(x)
+
         # Get logits
         logits = self.lm_head(x)
         
